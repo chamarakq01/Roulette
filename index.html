@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roulette Analyzer</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .container { display: flex; justify-content: space-around; margin-top: 20px; }
+        .table-container, .history-container, .analysis-container, .signal-container { width: 23%; border: 1px solid #000; padding: 10px; }
+        .table-btn { width: 50px; height: 50px; margin: 5px; font-size: 18px; }
+        .history-list, .analysis-list, .signal-list { list-style: none; padding: 0; }
+        .win { background-color: lightgreen; }
+        .loss { background-color: lightcoral; }
+    </style>
+</head>
+<body>
+
+    <h1>Roulette Azure Analyzer</h1>
+
+    <div class="container">
+        <!-- Roulette Table -->
+        <div class="table-container">
+            <h2>Table</h2>
+            <div id="rouletteTable"></div>
+        </div>
+
+        <!-- History -->
+        <div class="history-container">
+            <h2>History</h2>
+            <ul id="historyList" class="history-list"></ul>
+        </div>
+
+        <!-- Analysis -->
+        <div class="analysis-container">
+            <h2>Analysis</h2>
+            <ul id="analysisList" class="analysis-list"></ul>
+        </div>
+
+        <!-- Signals -->
+        <div class="signal-container">
+            <h2>Signals</h2>
+            <ul id="signalList" class="signal-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        let history = [];
+        let analysis = {};
+
+        function createRouletteTable() {
+            const table = document.getElementById("rouletteTable");
+            for (let i = 0; i <= 36; i++) {
+                let btn = document.createElement("button");
+                btn.classList.add("table-btn");
+                btn.textContent = i;
+                btn.onclick = () => addToHistory(i);
+                table.appendChild(btn);
+                if ((i + 1) % 6 === 0) table.appendChild(document.createElement("br"));
+            }
+        }
+
+        function addToHistory(number) {
+            history.unshift(number);
+            if (history.length > 15) history.pop();
+            updateHistory();
+            updateAnalysis();
+            updateSignals(number);
+        }
+
+        function updateHistory() {
+            let historyList = document.getElementById("historyList");
+            historyList.innerHTML = "";
+            history.forEach(num => {
+                let li = document.createElement("li");
+                li.textContent = num;
+                historyList.appendChild(li);
+            });
+        }
+
+        function updateAnalysis() {
+            analysis = {};
+            for (let i = 0; i < history.length - 1; i++) {
+                let current = history[i];
+                let next = history[i + 1];
+                if (!analysis[next]) analysis[next] = [];
+                if (!analysis[next].includes(current)) analysis[next].push(current);
+            }
+            renderAnalysis();
+        }
+
+        function renderAnalysis() {
+            let analysisList = document.getElementById("analysisList");
+            analysisList.innerHTML = "";
+            for (let [key, values] of Object.entries(analysis)) {
+                let li = document.createElement("li");
+                li.textContent = `${key}: ${values.join(", ")}`;
+                analysisList.appendChild(li);
+            }
+        }
+
+        function updateSignals(currentNumber) {
+            let signalList = document.getElementById("signalList");
+            let li = document.createElement("li");
+            if (analysis[currentNumber] && analysis[currentNumber].length > 0) {
+                li.textContent = `Bet on: ${analysis[currentNumber].join(", ")}`;
+                li.classList.add("win");
+            } else {
+                li.textContent = `No prediction`;
+                li.classList.add("loss");
+            }
+            signalList.prepend(li);
+        }
+
+        createRouletteTable();
+    </script>
+
+</body>
+</html>
